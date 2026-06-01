@@ -253,6 +253,36 @@ body {
 }
 
 /* ═══════════════════════════════════════
+   HERO ENTRY ANIMATIONS
+   ═══════════════════════════════════════ */
+
+@keyframes heroFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-fade-in {
+  opacity: 0;
+  animation: heroFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 15px) scale(0.95); }
+}
+
+.animate-orb-float {
+  animation: orbFloat 12s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════
    NEW UI UTILITIES
    ═══════════════════════════════════════ */
 
