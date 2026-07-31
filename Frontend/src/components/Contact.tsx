@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FadeIn } from './FadeIn';
 import { Mail, Phone, MapPin, Briefcase, Send } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from './SocialIcons';
 
+declare global {
+  interface Window {
+    hcaptcha: {
+      render: (container: HTMLElement, opt: { sitekey: string; theme: string }) => void;
+      getResponse: () => string;
+      reset: () => void;
+    };
+    onHCaptchaLoad: () => void;
+  }
+}
+
 const CONTACT_SERVICE_ENDPOINT = import.meta.env.VITE_CONTACT_SERVICE_ENDPOINT || "https://api.web3forms.com/submit";
 const CONTACT_SERVICE_KEY = import.meta.env.VITE_CONTACT_SERVICE_KEY || ""; // Define in .env to enable real mail
+const HCAPTCHA_SITE_KEY = import.meta.env.VITE_HCAPTCHA_SITE_KEY || "";     // Define in .env to enable spam protection
 
 export const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -15,18 +27,57 @@ export const Contact: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  
+  const captchaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!HCAPTCHA_SITE_KEY || isSubmitted) return;
+
+    const renderCaptcha = () => {
+      if (window.hcaptcha && captchaRef.current) {
+        try {
+          window.hcaptcha.render(captchaRef.current, {
+            sitekey: HCAPTCHA_SITE_KEY,
+            theme: 'dark'
+          });
+        } catch {
+          // Already rendered
+        }
+      }
+    };
+
+    if (window.hcaptcha) {
+      renderCaptcha();
+    } else {
+      window.onHCaptchaLoad = renderCaptcha;
+    }
+  }, [isSubmitted]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
 
+    // Check hCaptcha if sitekey configured
+    const captchaToken = HCAPTCHA_SITE_KEY && window.hcaptcha
+      ? window.hcaptcha.getResponse()
+      : "";
+
+    if (HCAPTCHA_SITE_KEY && !captchaToken) {
+      setSubmitError("Please complete the captcha challenge.");
+      return;
+    }
+
     if (!CONTACT_SERVICE_KEY) {
       // Fallback: Mock submit action
       setIsSubmitting(true);
       setTimeout(() => {
+        setIsSubmitting(true); // Keep submitting state briefly
         setIsSubmitting(false);
         setIsSubmitted(true);
         setFormData({ name: '', email: '', message: '' });
+        if (window.hcaptcha) {
+          window.hcaptcha.reset();
+        }
         setTimeout(() => {
           setIsSubmitted(false);
         }, 3000);
@@ -49,7 +100,8 @@ export const Contact: React.FC = () => {
           name: formData.name,
           email: formData.email,
           message: formData.message,
-          subject: `New Portfolio Message from ${formData.name}`
+          subject: `New Portfolio Message from ${formData.name}`,
+          "h-captcha-response": captchaToken
         })
       });
 
@@ -57,6 +109,9 @@ export const Contact: React.FC = () => {
       if (response.ok && (data.success || data.ok)) {
         setIsSubmitted(true);
         setFormData({ name: '', email: '', message: '' });
+        if (window.hcaptcha) {
+          window.hcaptcha.reset();
+        }
         setTimeout(() => {
           setIsSubmitted(false);
         }, 5000);
@@ -178,9 +233,16 @@ export const Contact: React.FC = () => {
                     <Send className="h-6 w-6" />
                   </div>
                   <h3 className="text-xl font-bold text-white tracking-tight">Message Sent Successfully!</h3>
-                  <p className="text-text-secondary text-sm font-light">
+                  <p className="text-text-secondary text-sm font-light mb-6">
                     Thank you for reaching out. I'll get back to you shortly.
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsSubmitted(false)}
+                    className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-border-custom hover:border-accent-purple/40 text-xs font-mono text-text-secondary hover:text-text-primary transition-all cursor-pointer bg-bg-primary hover:bg-bg-primary/80"
+                  >
+                    Send Another Message
+                  </button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -234,6 +296,13 @@ export const Contact: React.FC = () => {
                       className="w-full bg-bg-primary border border-border-custom hover:border-accent-purple/40 focus:border-accent-purple focus:ring-1 focus:ring-accent-purple text-white outline-none rounded-xl px-4 py-3 text-sm transition-all duration-200 resize-none"
                     />
                   </div>
+
+                  {/* hCaptcha Widget */}
+                  {HCAPTCHA_SITE_KEY && (
+                    <div className="flex justify-center mb-4 relative z-20">
+                      <div ref={captchaRef}></div>
+                    </div>
+                  )}
 
                   {/* Submit Button */}
                   <button

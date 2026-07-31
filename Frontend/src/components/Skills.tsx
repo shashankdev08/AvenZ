@@ -41,7 +41,7 @@ export const Skills: React.FC = () => {
       skills: [{ name: "MongoDB" }, { name: "PostgreSQL" }, { name: "MySQL" }, { name: "Redis" }]
     },
     {
-      title: "DevOps & Infra",
+      title: "DevOps & Tooling",
       icon: <Settings className="h-5 w-5 text-rose-400" />,
       borderClass: "border-l-rose-500",
       skills: [{ name: "Docker" }, { name: "Git" }, { name: "Firebase" }, { name: "Postman" }, { name: "Figma" }]

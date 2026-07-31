@@ -12,7 +12,7 @@ export const About: React.FC = () => {
   const stats = [
     { id: 1, end: 1000, suffix: '+', label: 'Users Served', icon: <User className="h-5 w-5 text-accent-purple" /> },
     { id: 2, end: 30, suffix: '+', label: 'APIs Built', icon: <Terminal className="h-5 w-5 text-accent-blue" /> },
-    { id: 3, end: 95, suffix: '%', label: 'Security Drop', icon: <Shield className="h-5 w-5 text-accent-purple" /> },
+    { id: 3, end: 95, suffix: '%', label: 'Unauthorized Access Drop', icon: <Shield className="h-5 w-5 text-accent-purple" /> },
     { id: 4, end: 40, suffix: '%', label: 'Performance Gain', icon: <TrendingUp className="h-5 w-5 text-accent-blue" /> },
   ];
 
