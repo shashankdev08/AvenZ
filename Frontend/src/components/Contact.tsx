@@ -3,6 +3,9 @@ import { FadeIn } from './FadeIn';
 import { Mail, Phone, MapPin, Briefcase, Send } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from './SocialIcons';
 
+const CONTACT_SERVICE_ENDPOINT = import.meta.env.VITE_CONTACT_SERVICE_ENDPOINT || "https://api.web3forms.com/submit";
+const CONTACT_SERVICE_KEY = import.meta.env.VITE_CONTACT_SERVICE_KEY || ""; // Define in .env to enable real mail
+
 export const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -10,16 +13,61 @@ export const Contact: React.FC = () => {
     message: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name && formData.email && formData.message) {
-      // Mock submit action
-      setIsSubmitted(true);
+    if (!formData.name || !formData.email || !formData.message) return;
+
+    if (!CONTACT_SERVICE_KEY) {
+      // Fallback: Mock submit action
+      setIsSubmitting(true);
       setTimeout(() => {
-        setIsSubmitted(false);
+        setIsSubmitting(false);
+        setIsSubmitted(true);
         setFormData({ name: '', email: '', message: '' });
-      }, 3000);
+        setTimeout(() => {
+          setIsSubmitted(false);
+        }, 3000);
+      }, 800);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const response = await fetch(CONTACT_SERVICE_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          access_key: CONTACT_SERVICE_KEY,
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+          subject: `New Portfolio Message from ${formData.name}`
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && (data.success || data.ok)) {
+        setIsSubmitted(true);
+        setFormData({ name: '', email: '', message: '' });
+        setTimeout(() => {
+          setIsSubmitted(false);
+        }, 5000);
+      } else {
+        throw new Error(data.message || "Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to send message. Please try again later.";
+      setSubmitError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -116,6 +164,14 @@ export const Contact: React.FC = () => {
           {/* Right Side: Contact Form */}
           <div className="lg:col-span-7">
             <FadeIn delay={200} className="bg-bg-surface border border-border-custom rounded-2xl p-6 sm:p-8 shadow-xl card-hover animated-border overflow-hidden relative">
+              
+              {/* Accessibility screen-reader live status */}
+              <div className="sr-only" aria-live="polite" role="status">
+                {isSubmitting && "Sending your message..."}
+                {isSubmitted && "Message sent successfully! Thank you for reaching out."}
+                {submitError && `Error sending message: ${submitError}`}
+              </div>
+
               {isSubmitted ? (
                 <div className="text-center py-12 space-y-4">
                   <div className="h-14 w-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4 animate-bounce">
@@ -182,11 +238,18 @@ export const Contact: React.FC = () => {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-medium bg-accent-purple hover:bg-accent-purple/90 text-white transition-all hover:-translate-y-0.5 cursor-pointer shadow-lg hover:shadow-accent-purple/20"
+                    disabled={isSubmitting}
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-medium bg-accent-purple hover:bg-accent-purple/90 text-white transition-all hover:-translate-y-0.5 cursor-pointer shadow-lg hover:shadow-accent-purple/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                   >
-                    Send Message
+                    {isSubmitting ? "Sending..." : "Send Message"}
                     <Send className="h-4 w-4" />
                   </button>
+
+                  {submitError && (
+                    <p className="text-red-400 text-xs sm:text-sm font-mono mt-2 text-center animate-pulse" role="alert">
+                      {submitError}
+                    </p>
+                  )}
                 </form>
               )}
             </FadeIn>

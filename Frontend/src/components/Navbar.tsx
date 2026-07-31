@@ -44,6 +44,8 @@ const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ activeTheme, setActiveThe
         onClick={() => setIsOpen(!isOpen)}
         className="p-2 rounded-xl bg-bg-surface border border-border-custom hover:border-accent-purple/40 text-text-secondary hover:text-text-primary transition-all flex items-center gap-1.5 cursor-pointer text-sm"
         aria-label="Change Theme"
+        aria-haspopup="true"
+        aria-expanded={isOpen}
       >
         <Palette className="h-4 w-4 text-accent-purple" />
         <span className="capitalize text-xs font-mono hidden sm:inline-block">
@@ -52,7 +54,11 @@ const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ activeTheme, setActiveThe
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-44 sm:w-48 rounded-xl bg-bg-surface border border-border-custom shadow-xl py-1.5 z-50">
+        <div 
+          className="absolute right-0 mt-2 w-44 sm:w-48 rounded-xl bg-bg-surface border border-border-custom shadow-xl py-1.5 z-50"
+          role="menu"
+          aria-label="Select Theme Options"
+        >
           {themes.map((t) => (
             <button
               key={t.id}
@@ -60,6 +66,8 @@ const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ activeTheme, setActiveThe
                 setActiveTheme(t.id);
                 setIsOpen(false);
               }}
+              role="menuitem"
+              aria-current={activeTheme === t.id ? 'true' : undefined}
               className={`w-full text-left px-4 py-2 text-xs font-mono font-medium hover:bg-bg-primary flex items-center gap-3 transition-colors cursor-pointer ${
                 activeTheme === t.id ? 'text-accent-purple bg-bg-primary/50' : 'text-text-secondary hover:text-text-primary'
               }`}
@@ -90,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeSection }) => {
         setIsScrolled(false);
       }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

@@ -1,26 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Mail, ArrowDown, Download, MapPin } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from './SocialIcons';
+import { TypingSubtitle } from './TypingSubtitle';
 
-const titles = [
-  "Full-Stack Developer",
-  "Backend Architect",
-  "Multi-tenant Systems Builder",
-  "AI Tools Explorer",
-  "MERN + Spring Boot Engineer"
-];
+interface Particle {
+  id: number;
+  style: React.CSSProperties;
+}
 
 const techStack = ["React", "Node.js", "Spring Boot", "MongoDB", "Docker", "TypeScript"];
 
 export const Hero: React.FC = () => {
-  const [titleIndex, setTitleIndex] = useState(0);
-  const [currentText, setCurrentText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [typingSpeed, setTypingSpeed] = useState(120);
+  const [particles, setParticles] = useState<Particle[]>([]);
 
-  // Stable particle configs — computed once
-  const particles = useMemo(() => {
-    return Array.from({ length: 25 }).map((_, i) => {
+  // Generate particles on mount to keep rendering pure (fixing react-hooks/purity ESLint error)
+  useEffect(() => {
+    const generated = Array.from({ length: 25 }).map((_, i) => {
       const size = Math.random() * 5 + 2;
       return {
         id: i,
@@ -33,6 +28,10 @@ export const Hero: React.FC = () => {
         }
       };
     });
+    const timer = setTimeout(() => {
+      setParticles(generated);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Orb configs — stable
@@ -41,34 +40,6 @@ export const Hero: React.FC = () => {
     { className: "bottom-1/4 -right-32 w-[400px] h-[400px] bg-accent-blue/[0.05]", delay: "2s" },
     { className: "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-accent-purple/[0.03]", delay: "4s" },
   ], []);
-
-  useEffect(() => {
-    const currentTitle = titles[titleIndex];
-    let timer: number;
-
-    const handleType = () => {
-      if (isDeleting) {
-        setCurrentText(prev => prev.slice(0, -1));
-        setTypingSpeed(40);
-      } else {
-        setCurrentText(currentTitle.slice(0, currentText.length + 1));
-        setTypingSpeed(100);
-      }
-
-      if (!isDeleting && currentText === currentTitle) {
-        timer = window.setTimeout(() => setIsDeleting(true), 2500);
-      } else if (isDeleting && currentText === "") {
-        setIsDeleting(false);
-        setTitleIndex(prev => (prev + 1) % titles.length);
-        setTypingSpeed(150);
-      } else {
-        timer = window.setTimeout(handleType, typingSpeed);
-      }
-    };
-
-    timer = window.setTimeout(handleType, typingSpeed);
-    return () => window.clearTimeout(timer);
-  }, [currentText, isDeleting, titleIndex, typingSpeed]);
 
   return (
     <section
@@ -126,14 +97,7 @@ export const Hero: React.FC = () => {
         </h1>
 
         {/* Animated Subtitle */}
-        <div className="h-10 md:h-12 flex items-center justify-center mb-6 hero-fade-in" style={{ animationDelay: '0.7s' }}>
-          <span className="text-lg sm:text-2xl md:text-3xl font-semibold text-text-secondary font-mono">
-            {'> '}
-          </span>
-          <span className="typing-cursor text-lg sm:text-2xl md:text-3xl font-semibold text-accent-blue font-mono">
-            {currentText}
-          </span>
-        </div>
+        <TypingSubtitle />
 
         {/* Tagline */}
         <p className="text-text-secondary max-w-lg text-sm sm:text-base md:text-lg mb-10 leading-relaxed font-light hero-fade-in" style={{ animationDelay: '0.9s' }}>

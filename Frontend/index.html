@@ -1,15 +1,37 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      (function() {
+        const theme = localStorage.getItem('portfolio-theme') || 'noir-gold';
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <meta name="theme-color" content="#000000" />
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
     <meta name="description" content="Portfolio of Shashank Pandey - Full-Stack Developer & Backend Architect specializing in MERN, Spring Boot, multi-tenant databases, JWT/RBAC security, and AI tool integration." />
     <meta name="keywords" content="Shashank Pandey, Full-Stack Developer, Backend Architect, Spring Boot, MERN Stack, React Developer, React Native, Pune, Software Engineer, Portfolio" />
     <title>Shashank Pandey | Full-Stack Developer & Backend Architect</title>
+
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://iamshashank.tiiny.site/" />
+    <meta property="og:title" content="Shashank Pandey | Full-Stack Developer & Backend Architect" />
+    <meta property="og:description" content="Portfolio of Shashank Pandey - Full-Stack Developer & Backend Architect specializing in MERN, Spring Boot, multi-tenant databases, JWT/RBAC security, and AI tool integration." />
+    <meta property="og:image" content="https://iamshashank.tiiny.site/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://iamshashank.tiiny.site/" />
+    <meta property="twitter:title" content="Shashank Pandey | Full-Stack Developer & Backend Architect" />
+    <meta property="twitter:description" content="Portfolio of Shashank Pandey - Full-Stack Developer & Backend Architect specializing in MERN, Spring Boot, multi-tenant databases, JWT/RBAC security, and AI tool integration." />
+    <meta property="twitter:image" content="https://iamshashank.tiiny.site/og-image.png" />
   </head>
   <body class="bg-bg-primary text-text-primary overflow-x-hidden">
     <div id="root"></div>

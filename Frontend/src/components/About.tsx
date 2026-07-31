@@ -1,9 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Counter } from './Counter';
 import { FadeIn } from './FadeIn';
 import { User, Shield, Terminal, TrendingUp } from 'lucide-react';
 
+const AVATAR_IMAGE_URL = "/avatar.jpg"; // Path to profile picture in public folder
+
 export const About: React.FC = () => {
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
   const stats = [
     { id: 1, end: 1000, suffix: '+', label: 'Users Served', icon: <User className="h-5 w-5 text-accent-purple" /> },
     { id: 2, end: 30, suffix: '+', label: 'APIs Built', icon: <Terminal className="h-5 w-5 text-accent-blue" /> },
@@ -35,14 +40,31 @@ export const About: React.FC = () => {
               <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-accent-purple to-accent-blue opacity-40 blur-xl group-hover:opacity-60 transition duration-700"></div>
               <div className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-full bg-bg-surface flex items-center justify-center border-2 border-border-custom shadow-2xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-tr from-accent-purple/10 to-accent-blue/10"></div>
-                <div className="flex flex-col items-center relative z-10">
-                  <span className="font-mono text-5xl sm:text-7xl font-bold gradient-text select-none">
-                    SP
-                  </span>
-                  <span className="font-mono text-[10px] text-text-secondary tracking-[0.3em] mt-3 uppercase font-medium">
-                    Pune, India
-                  </span>
-                </div>
+                
+                {/* Profile Image */}
+                {!imgError && (
+                  <img
+                    src={AVATAR_IMAGE_URL}
+                    alt="Shashank Pandey Profile"
+                    onLoad={() => setImgLoaded(true)}
+                    onError={() => setImgError(true)}
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 z-10 ${
+                      imgLoaded ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  />
+                )}
+
+                {/* Text Fallback Monogram (visible if error or image not loaded yet) */}
+                {(!imgLoaded || imgError) && (
+                  <div className="flex flex-col items-center relative z-0">
+                    <span className="font-mono text-5xl sm:text-7xl font-bold gradient-text select-none">
+                      SP
+                    </span>
+                    <span className="font-mono text-[10px] text-text-secondary tracking-[0.3em] mt-3 uppercase font-medium">
+                      Pune, India
+                    </span>
+                  </div>
+                )}
               </div>
             </FadeIn>
           </div>

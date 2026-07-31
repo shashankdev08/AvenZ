@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ArrowUp } from 'lucide-react';
@@ -19,43 +19,55 @@ const SectionDivider = () => (
 
 function App() {
   const [activeSection, setActiveSection] = useState('home');
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(() =>
+    typeof window !== 'undefined' ? window.scrollY > 500 : false
+  );
 
-  const handleScroll = useCallback(() => {
-    const sections = ['home', 'about', 'skills', 'experience', 'projects', 'ai', 'contact'];
-    const scrollPosition = window.scrollY + 200;
-
-    // Show/hide scroll-to-top
-    setShowScrollTop(window.scrollY > 500);
-
-    for (const section of sections) {
-      const el = document.getElementById(section);
-      if (el) {
-        const top = el.offsetTop;
-        const height = el.offsetHeight;
-        if (scrollPosition >= top && scrollPosition < top + height) {
-          setActiveSection(section);
-          break;
-        }
-      }
-    }
-  }, []);
-
+  // Monitor scroll height solely to show/hide the scroll-to-top button,
+  // avoiding triggering updates on every scroll frame.
   useEffect(() => {
-    let rafId: number;
-    const onScroll = () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(handleScroll);
+    const handleScroll = () => {
+      const isPastThreshold = window.scrollY > 500;
+      setShowScrollTop(prev => prev !== isPastThreshold ? isPastThreshold : prev);
     };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      cancelAnimationFrame(rafId);
+      window.removeEventListener('scroll', handleScroll);
     };
-  }, [handleScroll]);
+  }, []);
+
+  // Use IntersectionObserver for scroll-spy to prevent layout thrashing (forced reflow)
+  useEffect(() => {
+    const sections = ['home', 'about', 'skills', 'experience', 'projects', 'ai', 'contact'];
+    
+    const observerOptions = {
+      root: null,
+      rootMargin: '-30% 0px -40% 0px',
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => {
+      sections.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) observer.unobserve(el);
+      });
+    };
+  }, []);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
